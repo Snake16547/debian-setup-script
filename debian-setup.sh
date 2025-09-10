@@ -624,7 +624,7 @@ return 1
 # Display final summary
 
 show_summary() {
-local hostname timezone locale ssh_port endlessh_status docker_status packages_status motd_status
+local hostname timezone locale ssh_port endlessh_status docker_status
 
 ```
 hostname=$(hostname 2>/dev/null || echo "Unknown")
