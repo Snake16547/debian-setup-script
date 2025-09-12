@@ -485,6 +485,7 @@ install_docker() {
 install_motd() {
     local install_motd
     
+    echo -e "${BLUE}--- System Status MOTD Script ---${NC}"
     read -p "Would you like to install a system status MOTD script? (y/n): " install_motd
     
     if [[ "$install_motd" =~ ^[Yy]$ ]]; then
@@ -545,10 +546,8 @@ EOF
         fi
         
         log "SUCCESS" "MOTD script installed"
-        return 0
     else
         log "INFO" "Skipping MOTD script installation"
-        return 1
     fi
 }
 
