@@ -11,7 +11,7 @@ SCRIPT_LOG=”/var/log/debian-setup.log”
 BACKUP_DIR=”/root/debian-setup-backups”
 SSH_PORT=“22”
 SSH_PORT_CHANGED=false
-SCRIPT_DIR=”$(cd – “$(dirname – “${BASH_SOURCE[0]}”)” && pwd)”
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 RED=’\033[0;31m’
 GREEN=’\033[0;32m’
