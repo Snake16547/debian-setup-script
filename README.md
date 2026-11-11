@@ -12,13 +12,13 @@ A comprehensive, interactive Debian server setup script with enhanced security, 
 - ✅ Interactive hostname setup with `/etc/hosts` management
 - ✅ Timezone configuration with intelligent filtering
 - ✅ Locale setup with UTF-8 validation
-- ✅ SSH port customization with safe restart handling
+- ✅ Add an SSH listener while retaining existing ports
 
 **Security & Hardening**
 - ✅ Endlessh SSH honeypot installation (optional)
 - ✅ SSH configuration validation before applying changes
 - ✅ Automatic security updates via unattended-upgrades
-- ✅ Safe SSH service handling prevents remote lockouts
+- ✅ SSH configuration rollback if the new listener fails
 
 **Package Management**
 - ✅ Essential packages (sudo, curl, wget, htop, systemd-timesyncd)
@@ -31,7 +31,7 @@ A comprehensive, interactive Debian server setup script with enhanced security, 
 - ✅ Automatic backups of modified configuration files
 - ✅ Dry run mode for testing without changes
 - ✅ Error handling with graceful failure recovery
-- ✅ SSH connection detection prevents disconnection
+- ✅ Existing SSH listeners retained during port migration
 
 **User Experience**
 - ✅ Color-coded output for better readability
@@ -59,7 +59,7 @@ wget https://raw.githubusercontent.com/Snake16547/debian-setup-script/main/debia
 ./debian-setup.sh [--dry-run]
 
 Options:
-  --dry-run    Show what would be executed without making changes
+  --dry-run    Preview changes. Locale selection is skipped if locales is missing.
   --help, -h   Show help message and exit
 ```
 
@@ -72,7 +72,7 @@ Options:
 - System package updates and upgrades
 
 **Security Configuration**
-- SSH port customization (with safe restart handling)
+- Optional additional SSH listening port
 - Optional Endlessh honeypot on port 22
 - Automatic security updates configuration
 - Essential security packages installation
@@ -87,18 +87,15 @@ Options:
 
 ### SSH Protection
 
-The script intelligently detects SSH connections and prevents service interruptions:
+The script adds the requested port while keeping existing SSH listeners. It validates the staged configuration, reloads `ssh.service`, and restores the exact backup if the new listener fails to start. It leaves socket-activated SSH configurations for manual setup.
+
+Open the new TCP port in your host and provider firewalls, keep your current session open, and test a second connection from your client:
 
 ```bash
-# Safe for remote execution
-ssh user@server
-sudo ./debian-setup.sh  # Won't disconnect you!
+ssh -p 2222 user@server
 ```
 
-- **Connection detection**: Automatically detects SSH sessions
-- **Deferred restart**: SSH service changes applied after reboot
-- **Configuration validation**: Tests SSH config before applying
-- **Backup & restore**: Automatic rollback on configuration errors
+After verifying the second connection, you can retire the old SSH listener manually. Endlessh is skipped while port 22 is configured for SSH or another process is listening there. You can rerun setup after freeing port 22.
 
 ### Error Handling
 
@@ -126,8 +123,8 @@ Matching timezones:
 Select timezone number: 2
 [OK] Timezone set to Europe/Berlin.
 
-[WARN] SSH connection detected. Service restart deferred until reboot.
-[OK] SSH configured to port 2222.
+[OK] SSH is listening on port 2222. Existing listeners were retained.
+[WARN] Open a second session with ssh -p 2222 user@server before retiring any old port.
 
 === Setup Complete ===
 Hostname: myserver
@@ -144,8 +141,8 @@ The script will ask for your preferences on:
 1. **Hostname**: Server identification
 2. **Timezone**: Geographic location for time settings
 3. **Locale**: Language and character encoding
-4. **SSH Port**: Security through port change
-5. **Endlessh**: SSH honeypot installation (only if SSH moved from port 22)
+4. **SSH Port**: Add a listener and retain the existing ports
+5. **Endlessh**: SSH honeypot installation when TCP port 22 is free
 6. **Packages**: Essential system tools
 7. **Docker**: Container platform installation
 8. **MOTD**: System status display script
@@ -173,6 +170,8 @@ sudo ./debian-setup.sh
 ```
 
 **Docker installation fails**
+
+Docker publishes its own list of [supported Debian versions](https://docs.docker.com/engine/install/debian/#os-requirements). The base setup and the optional Docker repository have separate version requirements.
 ```bash
 # Check architecture support
 dpkg --print-architecture
